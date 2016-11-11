@@ -1,0 +1,8 @@
+{
+    "appSecret": "",
+    "pageAccessToken": "",
+    "validationToken": "erfgoed",
+    "serverURL": "",
+    "pathPrefix" : "",
+    "port" : 8080
+}

@@ -12,51 +12,34 @@
 
 const
   bodyParser = require('body-parser'),
-  config = require('config'),
   crypto = require('crypto'),
   express = require('express'),
   https = require('https'),
-  request = require('request');
+  request = require('request'),
+  fs = require('fs');
 
-var app = express();
-app.set('port', process.env.PORT || 8080);
-app.set('view engine', 'ejs');
-app.use(bodyParser.json({ verify: verifyRequestSignature }));
-app.use(express.static('public'));
-
-/*
- * Be sure to setup your config values before running this code. You can
- * set them using environment variables or modifying the config file in /config.
- *
- */
+const config = JSON.parse(fs.readFileSync('config/production.json', 'utf-8'));
 
 // App Secret can be retrieved from the App Dashboard
-const APP_SECRET = (process.env.MESSENGER_APP_SECRET) ?
-  process.env.MESSENGER_APP_SECRET :
-  config.get('appSecret');
+const APP_SECRET = config.appSecret;
 
 // Arbitrary value used to validate a webhook
-const VALIDATION_TOKEN = (process.env.MESSENGER_VALIDATION_TOKEN) ?
-  (process.env.MESSENGER_VALIDATION_TOKEN) :
-  config.get('validationToken');
+const VALIDATION_TOKEN = config.validationToken;
 
 // Generate a page access token for your page from the App Dashboard
-const PAGE_ACCESS_TOKEN = (process.env.MESSENGER_PAGE_ACCESS_TOKEN) ?
-  (process.env.MESSENGER_PAGE_ACCESS_TOKEN) :
-  config.get('pageAccessToken');
+const PAGE_ACCESS_TOKEN = config.pageAccessToken;
 
 // URL where the app is running (include protocol). Used to point to scripts and
 // assets located at this address.
-const SERVER_URL = (process.env.SERVER_URL) ?
-  (process.env.SERVER_URL) :
-  config.get('serverURL');
+const SERVER_URL = config.serverURL;
 
-const PATH_PREFIX = config.get('pathPrefix');
+const PATH_PREFIX = config.pathPrefix;
 
-if (!(APP_SECRET && VALIDATION_TOKEN && PAGE_ACCESS_TOKEN && SERVER_URL)) {
-  console.error("Missing config values");
-  process.exit(1);
-}
+var app = express();
+app.set('port', config.port);
+app.set('view engine', 'ejs');
+app.use(bodyParser.json({ verify: verifyRequestSignature }));
+app.use(PATH_PREFIX, express.static('public'));
 
 /*
  * Use your own validation token. Check that the token used in the Webhook
@@ -73,7 +56,6 @@ app.get(`${PATH_PREFIX}/webhook`, function(req, res) {
     res.sendStatus(403);
   }
 });
-
 
 /*
  * All callbacks for Messenger are POST-ed. They will be sent to the same
@@ -236,6 +218,16 @@ function receivedMessage(event) {
   var messageText = message.text;
   var messageAttachments = message.attachments;
   var quickReply = message.quick_reply;
+
+  // Currently the only type we support is text
+  if (messageText) {
+      bot.query(messageText, (err, data) => {
+
+      });
+  } else {
+      sendTextMessage(senderID, "Sorry, dit snap ik even niet.");
+      return;
+  }
 
   if (isEcho) {
     // Just logging message echoes to console
