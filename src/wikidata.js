@@ -39,7 +39,8 @@ function painterByDate(month, day, cb) {
     });
 }
 
-function handleImages(body, cb) {
+function handleImages(body, cb, authorId) {
+    authorId = authorId || null;
     var data = JSON.parse(body);
 
     if (!data.results.bindings || data.results.bindings.length === 0) {
@@ -49,14 +50,12 @@ function handleImages(body, cb) {
 
     var p = _.sample(data.results.bindings);
 
-    // console.log(p);
-
     var data = {
         image : p.image.value,
         label : p.itemLabel.value,
         description : p.itemDescription.value,
         id : p.item.value.replace('http://www.wikidata.org/entity/', ''),
-        author : body.authorId
+        author : authorId
     };
 
     if (p.collectionLabel) {
@@ -78,7 +77,7 @@ function paintingsByArtist(id, cb) {
 
         body.authorId = id;
 
-        handleImages(body, cb);
+        handleImages(body, cb, id);
     });
 }
 
