@@ -54,7 +54,8 @@ function handleImages(body, cb) {
     var data = {
         image : p.image.value,
         label : p.itemLabel.value,
-        description : p.itemDescription.value
+        description : p.itemDescription.value,
+        id : p.item.value.replace('http://www.wikidata.org/entity/', '')
     };
 
     if (p.collectionLabel) {

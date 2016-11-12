@@ -406,7 +406,8 @@ function receivedPostback(event) {
         if (data.images.collection) {
           setTimeout(function() {
             sendTextMessage(senderID, `Dit kun je trouwens zien in de collectie van ${data.images.collection}`)
-          }, 6000);
+            sendURL(senderID, `http://www.wikidata.org/wiki/${data.images.id}`);
+          }, 5000);
         }
       }
     }
@@ -668,6 +669,28 @@ function sendButtonMessage(recipientId, buttons) {
   // };
 
   // callSendAPI(messageData);
+}
+
+function sendURL(recId, url) {
+  callSendAPI({
+        recipient: {
+            id: recId
+        },
+        message : {
+            attachment : {
+                type : "template",
+                payload : {
+                    "template_type" : "button",
+                    "text" : 'Wil je meer weten?',
+                    buttons : [{
+                      type : "web_url",
+                      url : url,
+                      title : "Lees verder"
+                    }]
+                }
+            }
+        }
+    })
 }
 
 /*
