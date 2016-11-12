@@ -229,10 +229,11 @@ function receivedMessage(event) {
 
     // Currently the only type we support is text
     if (messageText) {
+        messageText = messageText.trim();
         sendTextMessage(senderID, "Ik ben nu aan het zoeken, een momentje...");
         sendTypingOn(senderID);
 
-        bot.searchPainters(messageText, (err, data) => {
+        function handle(err, data) {
             sendTypingOff(senderID);
 
             if (err) {
@@ -246,7 +247,15 @@ function receivedMessage(event) {
                     sendTextMessage(senderID, data.text);
                 }
             }
-        });
+        }
+
+        if (messageText.indexOf('-') !== -1) {
+          var dates = messageText.split('-');
+
+          bot.painterByDate(dates[0], dates[1], handle);
+        } else {
+          bot.searchPainters(messageText, handle);
+        }
     } else {
         sendTextMessage(senderID, "Sorry, dit snap ik even niet.");
     }

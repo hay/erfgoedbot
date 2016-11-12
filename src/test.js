@@ -9,5 +9,6 @@ function handle(err, data) {
 }
 
 // bot.query('rembrandt', handle);
-bot.paintingsByArtist('Q49987', handle);
+// bot.paintingsByArtist('Q49987', handle);
 // bot.searchPainters('doesbrug', handle);
+bot.painterByDate(6, 15, handle);

@@ -1,6 +1,32 @@
 const request = require('request');
 const _ = require('lodash');
 
+function painterByDate(month, day, cb) {
+    console.log(month, day);
+
+    const ENDPOINT = `https://query.wikidata.org/bigdata/namespace/wdq/sparql?format=json&query=PREFIX%20xsd%3A%20%3Chttp%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema%23%3E%0A%0ASELECT%20%3Fentity%20(YEAR(%3Fdate)%20AS%20%3Fyear)%20%3FentityLabel%20WHERE%20%7B%0A%20%20%3Fentity%20wdt%3AP31%20wd%3AQ5.%0A%20%20%3Fentity%20wdt%3AP106%20wd%3AQ1028181.%0A%20%20%3Fentity%20wdt%3AP569%20%3Fdate.%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22en%2Cnl%22.%20%7D%0A%20%20FILTER(((DATATYPE(%3Fdate))%20%3D%20xsd%3AdateTime)%20%26%26%20((MONTH(%3Fdate))%20%3D%20${month})%20%26%26%20((DAY(%3Fdate))%20%3D%20${day}))%0A%7D%0ALIMIT%203`;
+
+    request(ENDPOINT, (err, res, body) => {
+        if (err) {
+            cb(err, null);
+        }
+
+        var data = JSON.parse(body);
+
+        data = data.results.bindings.map((item) => {
+            return {
+                title : item.entityLabel.value,
+                payload : item.entity.value.replace('http://www.wikidata.org/entity/', '')
+            };
+        });
+
+        cb(null, {
+            text : `Welke van deze schilders wil je hebben?`,
+            data : data
+        });
+    });
+}
+
 function paintingsByArtist(id, cb) {
     const ENDPOINT = `https://query.wikidata.org/bigdata/namespace/wdq/sparql?format=json&query=select%20%3Fitem%20%3Fimage%20%3FitemLabel%20%3FitemDescription%20%3Flocation%20where%20%7B%20%0A%20%20%20%20%3Fitem%20wdt%3AP31%20wd%3AQ3305213%20.%20%0A%20%20%20%20%3Fitem%20wdt%3AP170%20wd%3A${id}%20.%0A%20%20%20%20%3Fitem%20wdt%3AP18%20%3Fimage%20.%0A%20%20%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22en%2Cnl%22%20%7D%0A%7D`;
 
@@ -76,4 +102,4 @@ function search(q, cb) {
     })
 }
 
-module.exports = { search, paintingsByArtist, searchPainters };
+module.exports = { search, paintingsByArtist, searchPainters, painterByDate };

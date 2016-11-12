@@ -1,5 +1,18 @@
 const wikidata = require('./wikidata.js');
 
+function painterByDate(month, day, callback) {
+    wikidata.painterByDate(month, day, (err, data) => {
+        if (!data || data.length === 0) {
+            callback('Geen resultaten gevonden', null);
+        } else {
+            callback(null, {
+                type : 'buttons',
+                buttons : data
+            });
+        }
+    });
+}
+
 function query(q, callback) {
     q = q.toLowerCase();
 
@@ -41,4 +54,4 @@ function paintingsByArtist(id, callback) {
     });
 }
 
-module.exports = { query, paintingsByArtist, searchPainters };
+module.exports = { query, paintingsByArtist, searchPainters, painterByDate };
