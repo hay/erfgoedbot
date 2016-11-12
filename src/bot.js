@@ -13,6 +13,12 @@ function painterByDate(month, day, callback) {
     });
 }
 
+function getMonuments(callback) {
+    wikidata.getMonuments((err, data) => {
+        handleImages(err, data,callback);
+    });
+}
+
 function query(q, callback) {
     q = q.toLowerCase();
 
@@ -41,17 +47,21 @@ function searchPainters(q, callback) {
     });
 }
 
+function handleImages(err, data, callback) {
+    if (err) {
+        callback(err, null);
+    } else {
+        callback(null, {
+            type : 'images',
+            images : data
+        });
+    }
+}
+
 function paintingsByArtist(id, callback) {
     wikidata.paintingsByArtist(id, (err, data) => {
-        if (err) {
-            callback(err, null);
-        } else {
-            callback(null, {
-                type : 'images',
-                images : data
-            });
-        }
+        handleImages(err, data, callback);
     });
 }
 
-module.exports = { query, paintingsByArtist, searchPainters, painterByDate };
+module.exports = { query, paintingsByArtist, searchPainters, painterByDate, getMonuments };

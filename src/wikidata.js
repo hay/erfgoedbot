@@ -1,6 +1,18 @@
 const request = require('request');
 const _ = require('lodash');
 
+function getMonuments(callback) {
+    const ENDPOINT = 'https://query.wikidata.org/bigdata/namespace/wdq/sparql?format=json&query=SELECT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20%3Fimage%20WHERE%20%7B%0A%20%20%3Fitem%20wdt%3AP1435%20wd%3AQ916333%20.%0A%20%20%3Fitem%20wdt%3AP131%20wd%3AQ803%20.%0A%20%20%3Fitem%20wdt%3AP18%20%3Fimage%20.%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22nl%22.%20%7D%0A%7D%20LIMIT%20100';
+
+    request(ENDPOINT, (err, res, body) => {
+        if (err) {
+            cb(err, null);
+        }
+
+        handleImages(body, callback);
+    });
+}
+
 function painterByDate(month, day, cb) {
     console.log(month, day);
 
@@ -21,9 +33,26 @@ function painterByDate(month, day, cb) {
         });
 
         cb(null, {
-            text : `Welke van deze schilders wil je hebben?`,
+            text : `Deze schilders zijn geboren op ${day}-${month}. Kies er een.`,
             data : data
         });
+    });
+}
+
+function handleImages(body, cb) {
+    var data = JSON.parse(body);
+
+    if (!data.results.bindings || data.results.bindings.length === 0) {
+        cb("Sorry, daar kan ik geen schilderijen van vinden.", null);
+        return;
+    }
+
+    var p = _.sample(data.results.bindings);
+
+    cb(null, {
+        image : p.image.value,
+        label : p.itemLabel.value,
+        description : p.itemDescription.value
     });
 }
 
@@ -35,20 +64,7 @@ function paintingsByArtist(id, cb) {
             cb(err, null);
         }
 
-        var data = JSON.parse(body);
-
-        if (!data.results.bindings || data.results.bindings.length === 0) {
-            cb("Sorry, daar kan ik geen schilderijen van vinden.", null);
-            return;
-        }
-
-        var p = _.sample(data.results.bindings);
-
-        cb(null, {
-            image : p.image.value,
-            label : p.itemLabel.value,
-            description : p.itemDescription.value
-        });
+        handleImages(body, cb);
     });
 }
 
@@ -102,4 +118,4 @@ function search(q, cb) {
     })
 }
 
-module.exports = { search, paintingsByArtist, searchPainters, painterByDate };
+module.exports = { search, paintingsByArtist, searchPainters, painterByDate, getMonuments };

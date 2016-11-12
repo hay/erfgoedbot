@@ -239,8 +239,14 @@ function receivedMessage(event) {
             if (err) {
                 sendTextMessage(senderID, err);
             } else {
+                console.log(data);
                 if (data.type === 'buttons') {
                     sendButtonMessage(senderID, data.buttons);
+                }
+
+                if (data.type === 'images') {
+                  sendTextMessage(senderID, `Je gaat zo zien: ${data.images.label}, ${data.images.description}`);
+                  sendImageMessage(senderID, data.images.image);
                 }
 
                 if (data.type === 'text') {
@@ -252,7 +258,9 @@ function receivedMessage(event) {
         if (messageText.indexOf('-') !== -1) {
           var dates = messageText.split('-');
 
-          bot.painterByDate(dates[0], dates[1], handle);
+          bot.painterByDate(dates[1], dates[0], handle);
+        } else if (messageText === 'utrecht') {
+          bot.getMonuments(handle);
         } else {
           bot.searchPainters(messageText, handle);
         }
@@ -448,6 +456,8 @@ function receivedAccountLink(event) {
  *
  */
 function sendImageMessage(recipientId, url) {
+  url = `${url}?width=500`;
+
   callSendAPI({
       recipient : {
           id : recipientId
