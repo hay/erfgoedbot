@@ -17,6 +17,7 @@ const
   https = require('https'),
   request = require('request'),
   bot = require('./bot.js'),
+  _ = require('lodash'),
   fs = require('fs');
 
 const config = JSON.parse(fs.readFileSync('config/production.json', 'utf-8'));
@@ -471,6 +472,11 @@ function sendImageMessage(recipientId, url) {
           }
       }
   });
+
+  setTimeout(function() {
+      sendTextMessage(recipientId, `${_.random(8, 50)} mensen zagen deze afbeelding ook, ${_.random(2, 4)} mensen kijken op dit moment`);
+  }, 4000);
+
 
   return;
 
