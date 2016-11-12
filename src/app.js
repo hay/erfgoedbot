@@ -409,7 +409,8 @@ function receivedPostback(event) {
         if (data.images.collection) {
           setTimeout(function() {
             sendTextMessage(senderID, `Dit kun je trouwens zien in de collectie van ${data.images.collection}`)
-            sendURL(senderID, `http://www.wikidata.org/wiki/${data.images.id}`);
+            const moreUrl = data.images.url ? data.images.url : `http://www.wikidata.org/wiki/${data.images.id}`;
+            sendURL(senderID, moreUrl);
             sendButtonMessage(senderID, {
               text : "Nog een werk van deze schilder?",
               data : [{
@@ -475,7 +476,7 @@ function receivedAccountLink(event) {
  *
  */
 function sendImageMessage(recipientId, url) {
-  url = `${url}?width=500`;
+  url = `${url}?width=800`;
 
   callSendAPI({
       recipient : {
