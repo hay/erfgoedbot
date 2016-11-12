@@ -265,6 +265,8 @@ function receivedMessage(event) {
           bot.painterByDate(dates[1], dates[0], handle);
         } else if (messageText === 'utrecht') {
           bot.getMonuments(handle);
+        } else if (messageText === 'surprise') {
+          bot.randomArtist(handle);
         } else {
           bot.searchPainters(messageText, handle);
         }

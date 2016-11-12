@@ -78,29 +78,41 @@ function paintingsByArtist(id, cb) {
     });
 }
 
+function handlePainters(body, cb) {
+    var data = JSON.parse(body);
+
+    if (!data.results.bindings || data.results.bindings.length === 0) {
+        cb("Sorry, ik kan geen schilders vinden die zo heten.", null);
+    } else {
+        data = data.results.bindings.slice(0, 3).map((item) => {
+            return {
+                title : item.itemLabel.value,
+                payload : item.item.value.replace('http://www.wikidata.org/entity/', '')
+            };
+        });
+
+        cb(null, {
+            text : `Welke van deze schilders wil je hebben?`,
+            data : data
+        });
+    }
+}
+
 function searchPainters(q, cb) {
     q = encodeURIComponent(q.toLowerCase());
 
     const ENDPOINT = `https://query.wikidata.org/bigdata/namespace/wdq/sparql?format=json&query=select%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20where%20%7B%20%0A%09%3Fitem%20wdt%3AP31%20wd%3AQ5%3B%20wdt%3AP106%20wd%3AQ1028181%3B%20rdfs%3Alabel%20%3Flabel%20.%0A%09FILTER(%20LANG(%3Flabel)%20%3D%20%22nl%22%20)%20.%0A%09FILTER(%20CONTAINS(LCASE(%3Flabel)%2C%20%22${q}%22)%20)%20.%0A%09SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22nl%22%20%7D%20.%0A%7D`;
 
     request(ENDPOINT, (err, res, body) => {
-        var data = JSON.parse(body);
+        handlePainters(body, cb);
+    });
+}
 
-        if (!data.results.bindings || data.results.bindings.length === 0) {
-            cb("Sorry, ik kan geen schilders vinden die zo heten.", null);
-        } else {
-            data = data.results.bindings.slice(0, 3).map((item) => {
-                return {
-                    title : item.itemLabel.value,
-                    payload : item.item.value.replace('http://www.wikidata.org/entity/', '')
-                };
-            });
+function randomArtist(cb) {
+    const ENDPOINT = `https://query.wikidata.org/bigdata/namespace/wdq/sparql?format=json&query=SELECT%20DISTINCT%20%3Fitem%20%3FitemLabel%20WHERE%20%7B%0A%20%20%09%3Fwork%20wdt%3AP31%20wd%3AQ3305213%20.%0A%20%20%09%3Fwork%20wdt%3AP18%20%3Fimage%20.%0A%20%20%09%3Fwork%20wdt%3AP195%20%3Fcollection%20.%0A%20%20%09%3Fcollection%20wdt%3AP17%20wd%3AQ55%20.%0A%20%20%09%3Fwork%20wdt%3AP170%20%3Fitem%20.%0A%09SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22en%2Cnl%22%20%7D%0A%7D%0ALIMIT%20100`;
 
-            cb(null, {
-                text : `Welke van deze schilders wil je hebben?`,
-                data : data
-            });
-        }
+    request(ENDPOINT, (err, res, body) => {
+        handlePainters(body, cb);
     });
 }
 
@@ -128,4 +140,4 @@ function search(q, cb) {
     })
 }
 
-module.exports = { search, paintingsByArtist, searchPainters, painterByDate, getMonuments };
+module.exports = { search, paintingsByArtist, searchPainters, painterByDate, getMonuments, randomArtist };

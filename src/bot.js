@@ -1,4 +1,12 @@
 const wikidata = require('./wikidata.js');
+const _ = require('lodash');
+
+function randomArtist(callback) {
+    wikidata.randomArtist((err, data) => {
+        data.data = [_.sample(data.data)];
+        handlePainters(err, data, callback);
+    });
+}
 
 function painterByDate(month, day, callback) {
     wikidata.painterByDate(month, day, (err, data) => {
@@ -34,16 +42,20 @@ function query(q, callback) {
     });
 }
 
+function handlePainters(err, data, callback) {
+    if (err) {
+        callback(err, null);
+    } else {
+        callback(null, {
+            type : 'buttons',
+            buttons : data
+        });
+    }
+}
+
 function searchPainters(q, callback) {
     wikidata.searchPainters(q, (err, data) => {
-        if (err) {
-            callback(err, null);
-        } else {
-            callback(null, {
-                type : 'buttons',
-                buttons : data
-            });
-        }
+        handlePainters(err, data, callback);
     });
 }
 
@@ -64,4 +76,4 @@ function paintingsByArtist(id, callback) {
     });
 }
 
-module.exports = { query, paintingsByArtist, searchPainters, painterByDate, getMonuments };
+module.exports = { query, paintingsByArtist, searchPainters, painterByDate, getMonuments, randomArtist };
