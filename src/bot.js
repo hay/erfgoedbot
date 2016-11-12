@@ -15,13 +15,30 @@ function query(q, callback) {
     });
 }
 
-function paintingsByArtist(id, callback) {
-    wikidata.paintingsByArtist(id, (err, data) => {
-        callback(null, {
-            type : 'images',
-            images : data.map((i) => i.image)
-        });
+function searchPainters(q, callback) {
+    wikidata.searchPainters(q, (err, data) => {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, {
+                type : 'buttons',
+                buttons : data
+            });
+        }
     });
 }
 
-module.exports = { query, paintingsByArtist };
+function paintingsByArtist(id, callback) {
+    wikidata.paintingsByArtist(id, (err, data) => {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, {
+                type : 'images',
+                images : data
+            });
+        }
+    });
+}
+
+module.exports = { query, paintingsByArtist, searchPainters };

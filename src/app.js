@@ -229,7 +229,12 @@ function receivedMessage(event) {
 
     // Currently the only type we support is text
     if (messageText) {
-        bot.query(messageText, (err, data) => {
+        sendTextMessage(senderID, "Ik ben nu aan het zoeken, een momentje...");
+        sendTypingOn(senderID);
+
+        bot.searchPainters(messageText, (err, data) => {
+            sendTypingOff(senderID);
+
             if (err) {
                 sendTextMessage(senderID, "Sorry, er ging iets mis, dit is het probleem : " + err);
             } else {
@@ -372,10 +377,13 @@ function receivedPostback(event) {
   var payload = event.postback.payload;
 
   bot.paintingsByArtist(payload, (err, data) => {
-    if (data.type === 'images') {
-      data.images.forEach((img) => {
-        sendImageMessage(senderID, img);
-      });
+    if (err) {
+      sendTextMessage(senderID, `Er ging iets mis: ${err}`);
+    } else {
+      if (data.type === 'images') {
+        sendTextMessage(senderID, `Je gaat zo zien: ${data.images.label}, ${data.images.description}`);
+        sendImageMessage(senderID, data.images.image);
+      }
     }
   });
 
@@ -385,7 +393,7 @@ function receivedPostback(event) {
 
   // When a postback is called, we'll send a message back to the sender to
   // let them know it was successful
-  sendTextMessage(senderID, "Ik ben nu wat schilderijen aan het ophalen...");
+  sendTextMessage(senderID, "Ik ben nu een schilderij aan het ophalen...");
 }
 
 /*
