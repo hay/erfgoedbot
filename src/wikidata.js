@@ -55,7 +55,8 @@ function handleImages(body, cb) {
         image : p.image.value,
         label : p.itemLabel.value,
         description : p.itemDescription.value,
-        id : p.item.value.replace('http://www.wikidata.org/entity/', '')
+        id : p.item.value.replace('http://www.wikidata.org/entity/', ''),
+        author : body.authorId
     };
 
     if (p.collectionLabel) {
@@ -74,6 +75,8 @@ function paintingsByArtist(id, cb) {
         if (err) {
             cb(err, null);
         }
+
+        body.authorId = id;
 
         handleImages(body, cb);
     });

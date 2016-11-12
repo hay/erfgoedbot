@@ -414,7 +414,7 @@ function receivedPostback(event) {
               text : "Nog een werk van deze schilder?",
               data : [{
                 title : "Ja, leuk!",
-                payload : data.images.id
+                payload : data.images.author
               }]
             })
           }, 5000);
