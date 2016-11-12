@@ -236,7 +236,7 @@ function receivedMessage(event) {
             sendTypingOff(senderID);
 
             if (err) {
-                sendTextMessage(senderID, "Sorry, er ging iets mis, dit is het probleem : " + err);
+                sendTextMessage(senderID, err);
             } else {
                 if (data.type === 'buttons') {
                     sendButtonMessage(senderID, data.buttons);

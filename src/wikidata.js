@@ -12,7 +12,7 @@ function paintingsByArtist(id, cb) {
         var data = JSON.parse(body);
 
         if (!data.results.bindings || data.results.bindings.length === 0) {
-            cb("Geen schilderijen gevonden", null);
+            cb("Sorry, daar kan ik geen schilderijen van vinden.", null);
             return;
         }
 
@@ -35,7 +35,7 @@ function searchPainters(q, cb) {
         var data = JSON.parse(body);
 
         if (!data.results.bindings || data.results.bindings.length === 0) {
-            cb("Geen resultaten gevonden", null);
+            cb("Sorry, ik kan geen schilders vinden die zo heten.", null);
         } else {
             data = data.results.bindings.slice(0, 3).map((item) => {
                 return {
