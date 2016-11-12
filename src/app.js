@@ -401,6 +401,13 @@ function receivedPostback(event) {
       if (data.type === 'images') {
         sendTextMessage(senderID, `Je gaat zo zien: ${data.images.label}, ${data.images.description}`);
         sendImageMessage(senderID, data.images.image);
+        console.log(data.images);
+
+        if (data.images.collection) {
+          setTimeout(function() {
+            sendTextMessage(senderID, `Dit kun je trouwens zien in de collectie van ${data.images.collection}`)
+          }, 6000);
+        }
       }
     }
   });
