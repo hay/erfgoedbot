@@ -248,6 +248,9 @@ function receivedMessage(event) {
                 if (data.type === 'images') {
                   sendTextMessage(senderID, `Je gaat zo zien: ${data.images.label}, ${data.images.description}`);
                   sendImageMessage(senderID, data.images.image);
+                  setTimeout(function() {
+                    sendURL(senderID, `http://www.wikidata.org/wiki/${data.images.id}`);
+                  }, 3000);
                 }
 
                 if (data.type === 'text') {
@@ -407,6 +410,13 @@ function receivedPostback(event) {
           setTimeout(function() {
             sendTextMessage(senderID, `Dit kun je trouwens zien in de collectie van ${data.images.collection}`)
             sendURL(senderID, `http://www.wikidata.org/wiki/${data.images.id}`);
+            sendButtonMessage(senderID, {
+              text : "Nog een werk van deze schilder?",
+              data : [{
+                title : "Ja, leuk!",
+                payload : data.images.id
+              }]
+            })
           }, 5000);
         }
       }
