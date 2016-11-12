@@ -16,6 +16,7 @@ const
   express = require('express'),
   https = require('https'),
   request = require('request'),
+  bot = require('./bot.js'),
   fs = require('fs');
 
 const config = JSON.parse(fs.readFileSync('config/production.json', 'utf-8'));
@@ -219,15 +220,33 @@ function receivedMessage(event) {
   var messageAttachments = message.attachments;
   var quickReply = message.quick_reply;
 
-  // Currently the only type we support is text
-  if (messageText) {
-      bot.query(messageText, (err, data) => {
-
-      });
-  } else {
-      sendTextMessage(senderID, "Sorry, dit snap ik even niet.");
-      return;
+  if (isEcho) {
+    // Just logging message echoes to console
+    console.log("Received echo for message %s and app %d with metadata %s",
+      messageId, appId, metadata);
+    return;
   }
+
+    // Currently the only type we support is text
+    if (messageText) {
+        bot.query(messageText, (err, data) => {
+            if (err) {
+                sendTextMessage(senderID, "Sorry, er ging iets mis, dit is het probleem : " + err);
+            } else {
+                if (data.type === 'buttons') {
+                    sendButtonMessage(senderID, data.buttons);
+                }
+
+                if (data.type === 'text') {
+                    sendTextMessage(senderID, data.text);
+                }
+            }
+        });
+    } else {
+        sendTextMessage(senderID, "Sorry, dit snap ik even niet.");
+    }
+
+    return;
 
   if (isEcho) {
     // Just logging message echoes to console
@@ -352,12 +371,21 @@ function receivedPostback(event) {
   // button for Structured Messages.
   var payload = event.postback.payload;
 
+  bot.paintingsByArtist(payload, (err, data) => {
+    if (data.type === 'images') {
+      data.images.forEach((img) => {
+        sendImageMessage(senderID, img);
+      });
+    }
+  });
+
+
   console.log("Received postback for user %d and page %d with payload '%s' " +
     "at %d", senderID, recipientID, payload, timeOfPostback);
 
   // When a postback is called, we'll send a message back to the sender to
   // let them know it was successful
-  sendTextMessage(senderID, "Postback called");
+  sendTextMessage(senderID, "Ik ben nu wat schilderijen aan het ophalen...");
 }
 
 /*
@@ -402,7 +430,23 @@ function receivedAccountLink(event) {
  * Send an image using the Send API.
  *
  */
-function sendImageMessage(recipientId) {
+function sendImageMessage(recipientId, url) {
+  callSendAPI({
+      recipient : {
+          id : recipientId
+      },
+      message : {
+          attachment : {
+              type : 'image',
+              payload : {
+                  url : url
+              }
+          }
+      }
+  });
+
+  return;
+
   var messageData = {
     recipient: {
       id: recipientId
@@ -530,36 +574,60 @@ function sendTextMessage(recipientId, messageText) {
  * Send a button message using the Send API.
  *
  */
-function sendButtonMessage(recipientId) {
-  var messageData = {
-    recipient: {
-      id: recipientId
-    },
-    message: {
-      attachment: {
-        type: "template",
-        payload: {
-          template_type: "button",
-          text: "This is test text",
-          buttons:[{
-            type: "web_url",
-            url: "https://www.oculus.com/en-us/rift/",
-            title: "Open Web URL"
-          }, {
-            type: "postback",
-            title: "Trigger Postback",
-            payload: "DEVELOPER_DEFINED_PAYLOAD"
-          }, {
-            type: "phone_number",
-            title: "Call Phone Number",
-            payload: "+16505551234"
-          }]
+function sendButtonMessage(recipientId, buttons) {
+    const data = {
+        recipient: {
+            id: recipientId
+        },
+        message : {
+            attachment : {
+                type : "template",
+                payload : {
+                    "template_type" : "button",
+                    "text" : buttons.text,
+                    buttons : buttons.data.map((b) => {
+                        return {
+                            type : "postback",
+                            title : b.title,
+                            payload : b.payload
+                        }
+                    })
+                }
+            }
         }
-      }
-    }
-  };
+    };
 
-  callSendAPI(messageData);
+    callSendAPI(data);
+
+  // var messageData = {
+  //   recipient: {
+  //     id: recipientId
+  //   },
+  //   message: {
+  //     attachment: {
+  //       type: "template",
+  //       payload: {
+  //         template_type: "button",
+  //         text: "This is test text",
+  //         buttons:[{
+  //           type: "web_url",
+  //           url: "https://www.oculus.com/en-us/rift/",
+  //           title: "Open Web URL"
+  //         }, {
+  //           type: "postback",
+  //           title: "Trigger Postback",
+  //           payload: "DEVELOPER_DEFINED_PAYLOAD"
+  //         }, {
+  //           type: "phone_number",
+  //           title: "Call Phone Number",
+  //           payload: "+16505551234"
+  //         }]
+  //       }
+  //     }
+  //   }
+  // };
+
+  // callSendAPI(messageData);
 }
 
 /*
