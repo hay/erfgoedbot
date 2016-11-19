@@ -72,11 +72,13 @@ function paintingsByArtist(id, cb) {
     });
 }
 
-function handlePainters(data, cb) {
+function handlePainters(data, cb, limit) {
+    limit = limit || 3;
+
     if (!data.results.bindings || data.results.bindings.length === 0) {
         cb("Sorry, ik kan geen schilders vinden die zo heten.", null);
     } else {
-        data = data.results.bindings.slice(0, 3).map((item) => {
+        data = data.results.bindings.slice(0, limit).map((item) => {
             return {
                 title : item.itemLabel.value,
                 payload : item.item.value.replace('http://www.wikidata.org/entity/', '')
@@ -104,7 +106,7 @@ function randomArtist(cb) {
     q = queries.randomArtist();
 
     query(q).then((data) => {
-        handlePainters(data, cb);
+        handlePainters(data, cb, 100);
     });
 }
 

@@ -52,7 +52,7 @@ function randomArtist() {
         ?collection wdt:P17 wd:Q55 .
         ?work wdt:P170 ?item .
         SERVICE wikibase:label { bd:serviceParam wikibase:language "en,nl" }
-    } LIMIT 100`;
+    } LIMIT 1000`;
 }
 
 module.exports = {

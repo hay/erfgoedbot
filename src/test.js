@@ -9,8 +9,8 @@ function handle(err, data) {
 }
 
 // bot.query('rembrandt', handle);
-bot.paintingsByArtist('Q49987', handle);
+// bot.paintingsByArtist('Q49987', handle);
 // bot.searchPainters('doesburg', handle);
 // bot.painterByDate(6, 15, handle);
 // bot.getMonuments(handle);
-// bot.randomArtist(handle);
+bot.randomArtist(handle);
