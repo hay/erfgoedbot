@@ -81,6 +81,8 @@ function handlePainters(data, cb) {
                 title : item.itemLabel.value,
                 payload : item.item.value.replace('http://www.wikidata.org/entity/', '')
             };
+        }).sort(function(a, b) {
+            return parseInt(a.payload.slice(1)) < parseInt(b.payload.slice(1)) ? -1 : 1;
         });
 
         cb(null, {

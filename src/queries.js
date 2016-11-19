@@ -24,8 +24,7 @@ function painterByDate(month, day) {
 
 function paintingsByArtist(id) {
     return `
-    select ?item ?image ?itemLabel ?itemDescription ?collectionLabel ?described where {
-        ?item wdt:P31 wd:Q3305213 .
+        select distinct ?item ?image ?itemLabel ?itemDescription ?collectionLabel ?described where {
         ?item wdt:P170 wd:${id} .
         ?item wdt:P18 ?image .
         ?item wdt:P195 ?collection .
@@ -36,12 +35,12 @@ function paintingsByArtist(id) {
 
 function searchPainters(q) {
     return `
-    select ?item ?itemLabel ?itemDescription where {
+    select distinct ?item ?itemLabel ?itemDescription ?itemAltLabel where {
         ?item wdt:P31 wd:Q5; wdt:P106 wd:Q1028181; rdfs:label ?label .
-        FILTER( LANG(?label) = "nl" ) .
-        FILTER( CONTAINS(LCASE(?label), "${q}") ) .
+        FILTER( LANG(?label) = "nl" || LANG(?label) = "en" ) .
+        FILTER( CONTAINS(LCASE(?label), "${q}") || CONTAINS(LCASE(?altLabel), "${q}") ) .
         SERVICE wikibase:label { bd:serviceParam wikibase:language "nl" } .
-    }`;
+    } order by desc(?item)`;
 }
 
 function randomArtist() {
