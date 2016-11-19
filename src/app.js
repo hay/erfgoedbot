@@ -230,7 +230,7 @@ function receivedMessage(event) {
 
     // Currently the only type we support is text
     if (messageText) {
-        messageText = messageText.trim();
+        messageText = messageText.trim().toLowerCase();
         sendTextMessage(senderID, "Ik ben nu aan het zoeken, een momentje...");
         sendTypingOn(senderID);
 
