@@ -564,16 +564,17 @@ function callSendAPI(messageData) {
       const messageId = body.message_id;
 
       if (messageId) {
-        console.log("Successfully sent message with id %s to recipient %s",
-          messageId, recipientId);
+        console.log("Successfully sent message with id %s to recipient %s", messageId, recipientId);
       } else {
-      console.log("Successfully called Send API for recipient %s",
-        recipientId);
+        console.log("Successfully called Send API for recipient %s", recipientId);
       }
+      console.log("Message data was:", JSON.stringify(messageData, null, 2));
+      console.log("=====\n\n")
+
     } else {
       console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
       console.error("Message data was:", JSON.stringify(messageData, null, 2));
-
+      console.error("=====\n\n")
     }
   });
 }
