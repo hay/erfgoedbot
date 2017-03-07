@@ -251,21 +251,21 @@ function receivedMessage(event) {
 
     // Currently the only type we support is text
     if (messageText) {
-        messageText = messageText.trim().toLowerCase();
+        const parsedMsg = messageText.trim().toLowerCase();
         sendTextMessage(senderID, "Ik ben nu aan het zoeken, een momentje...");
         sendTypingOn(senderID);
 
 
-        if (messageText.indexOf('-') !== -1) {
-          const dates = messageText.split('-');
+        if (parsedMsg.indexOf('-') !== -1) {
+          const dates = parsedMsg.split('-');
 
           bot.painterByDate(dates[1], dates[0], handleSearchResponse(senderID));
-        } else if (messageText === 'utrecht') {
+        } else if (parsedMsg === 'utrecht') {
           bot.getMonuments(handleSearchResponse(senderID));
-        } else if (messageText === 'surprise') {
+        } else if (parsedMsg === 'surprise') {
           bot.randomArtist(handleSearchResponse(senderID));
         } else {
-          bot.searchPainters(messageText, handleSearchResponse(senderID));
+          bot.searchPainters(parsedMsg, handleSearchResponse(senderID));
         }
     } else {
         sendTextMessage(senderID, "Sorry, dit snap ik even niet.");
