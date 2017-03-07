@@ -46,7 +46,7 @@ const SERVER_URL = config.serverURL;
 
 const PATH_PREFIX = config.pathPrefix;
 
-var app = express();
+const app = express();
 app.set('port', config.port);
 app.set('view engine', 'ejs');
 app.use(bodyParser.json({ verify: verifyRequestSignature }));
@@ -76,7 +76,7 @@ app.get(`${PATH_PREFIX}/webhook`, function(req, res) {
  *
  */
 app.post(`${PATH_PREFIX}/webhook`, function (req, res) {
-  var data = req.body;
+  const data = req.body;
 
   // Make sure this is a page subscription
   if (data.object == 'page') {
@@ -118,15 +118,15 @@ app.post(`${PATH_PREFIX}/webhook`, function (req, res) {
  *
  */
 app.get(`${PATH_PREFIX}/authorize`, function(req, res) {
-  var accountLinkingToken = req.query.account_linking_token;
-  var redirectURI = req.query.redirect_uri;
+  const accountLinkingToken = req.query.account_linking_token;
+  const redirectURI = req.query.redirect_uri;
 
   // Authorization Code should be generated per user by the developer. This will
   // be passed to the Account Linking callback.
-  var authCode = "1234567890";
+  const authCode = "1234567890";
 
   // Redirect users to this URI on successful login
-  var redirectURISuccess = redirectURI + "&authorization_code=" + authCode;
+  const redirectURISuccess = redirectURI + "&authorization_code=" + authCode;
 
   res.render('authorize', {
     accountLinkingToken: accountLinkingToken,
@@ -144,18 +144,18 @@ app.get(`${PATH_PREFIX}/authorize`, function(req, res) {
  *
  */
 function verifyRequestSignature(req, res, buf) {
-  var signature = req.headers["x-hub-signature"];
+  const signature = req.headers["x-hub-signature"];
 
   if (!signature) {
     // For testing, let's log an error. In production, you should throw an
     // error.
     console.error("Couldn't validate the signature.");
   } else {
-    var elements = signature.split('=');
-    var method = elements[0];
-    var signatureHash = elements[1];
+    const elements = signature.split('=');
+    const method = elements[0];
+    const signatureHash = elements[1];
 
-    var expectedHash = crypto.createHmac('sha1', APP_SECRET)
+    const expectedHash = crypto.createHmac('sha1', APP_SECRET)
                         .update(buf)
                         .digest('hex');
 
@@ -174,16 +174,16 @@ function verifyRequestSignature(req, res, buf) {
  *
  */
 function receivedAuthentication(event) {
-  var senderID = event.sender.id;
-  var recipientID = event.recipient.id;
-  var timeOfAuth = event.timestamp;
+  const senderID = event.sender.id;
+  const recipientID = event.recipient.id;
+  const timeOfAuth = event.timestamp;
 
   // The 'ref' field is set in the 'Send to Messenger' plugin, in the 'data-ref'
   // The developer can set this to an arbitrary value to associate the
   // authentication callback with the 'Send to Messenger' click event. This is
   // a way to do account linking when the user clicks the 'Send to Messenger'
   // plugin.
-  var passThroughParam = event.optin.ref;
+  const passThroughParam = event.optin.ref;
 
   console.log("Received authentication for user %d and page %d with pass " +
     "through param '%s' at %d", senderID, recipientID, passThroughParam,
@@ -237,17 +237,17 @@ function handleSearchResponse(senderID) {
  *
  */
 function receivedMessage(event) {
-  var senderID = event.sender.id;
-  var recipientID = event.recipient.id;
-  var timeOfMessage = event.timestamp;
-  var message = event.message;
+  const senderID = event.sender.id;
+  const recipientID = event.recipient.id;
+  const timeOfMessage = event.timestamp;
+  const message = event.message;
 
   console.log("Received message for user %d and page %d at %d with message:",
     senderID, recipientID, timeOfMessage);
   console.log(JSON.stringify(message));
 
   // You may get a text or attachment but not both
-  var messageText = message.text;
+  const messageText = message.text;
 
     // Currently the only type we support is text
     if (messageText) {
@@ -257,7 +257,7 @@ function receivedMessage(event) {
 
 
         if (messageText.indexOf('-') !== -1) {
-          var dates = messageText.split('-');
+          const dates = messageText.split('-');
 
           bot.painterByDate(dates[1], dates[0], handleSearchResponse(senderID));
         } else if (messageText === 'utrecht') {
@@ -283,12 +283,12 @@ function receivedMessage(event) {
  *
  */
 function receivedDeliveryConfirmation(event) {
-  var senderID = event.sender.id;
-  var recipientID = event.recipient.id;
-  var delivery = event.delivery;
-  var messageIDs = delivery.mids;
-  var watermark = delivery.watermark;
-  var sequenceNumber = delivery.seq;
+  const senderID = event.sender.id;
+  const recipientID = event.recipient.id;
+  const delivery = event.delivery;
+  const messageIDs = delivery.mids;
+  const watermark = delivery.watermark;
+  const sequenceNumber = delivery.seq;
 
   if (messageIDs) {
     messageIDs.forEach(function(messageID) {
@@ -309,13 +309,13 @@ function receivedDeliveryConfirmation(event) {
  *
  */
 function receivedPostback(event) {
-  var senderID = event.sender.id;
-  var recipientID = event.recipient.id;
-  var timeOfPostback = event.timestamp;
+  const senderID = event.sender.id;
+  const recipientID = event.recipient.id;
+  const timeOfPostback = event.timestamp;
 
   // The 'payload' param is a developer-defined field which is set in a postback
   // button for Structured Messages.
-  var payload = event.postback.payload;
+  const payload = event.postback.payload;
 
   bot.paintingsByArtist(payload, (err, data) => {
     if (err) {
@@ -361,12 +361,12 @@ function receivedPostback(event) {
  *
  */
 function receivedMessageRead(event) {
-  var senderID = event.sender.id;
-  var recipientID = event.recipient.id;
+  const senderID = event.sender.id;
+  const recipientID = event.recipient.id;
 
   // All messages before watermark (a timestamp) or sequence have been seen.
-  var watermark = event.read.watermark;
-  var sequenceNumber = event.read.seq;
+  const watermark = event.read.watermark;
+  const sequenceNumber = event.read.seq;
 
   console.log("Received message read event for watermark %d and sequence " +
     "number %d", watermark, sequenceNumber);
@@ -381,11 +381,11 @@ function receivedMessageRead(event) {
  *
  */
 function receivedAccountLink(event) {
-  var senderID = event.sender.id;
-  var recipientID = event.recipient.id;
+  const senderID = event.sender.id;
+  const recipientID = event.recipient.id;
 
-  var status = event.account_linking.status;
-  var authCode = event.account_linking.authorization_code;
+  const status = event.account_linking.status;
+  const authCode = event.account_linking.authorization_code;
 
   console.log("Received account link event with for user %d with status %s " +
     "and auth code %s ", senderID, status, authCode);
@@ -419,7 +419,7 @@ function sendImageMessage(recipientId, url) {
 
   return;
 
-  var messageData = {
+  const messageData = {
     recipient: {
       id: recipientId
     },
@@ -441,7 +441,7 @@ function sendImageMessage(recipientId, url) {
  *
  */
 function sendTextMessage(recipientId, messageText) {
-  var messageData = {
+  const messageData = {
     recipient: {
       id: recipientId
     },
@@ -514,7 +514,7 @@ function sendURL(recId, url) {
 function sendTypingOn(recipientId) {
   console.log("Turning typing indicator on");
 
-  var messageData = {
+  const messageData = {
     recipient: {
       id: recipientId
     },
@@ -531,7 +531,7 @@ function sendTypingOn(recipientId) {
 function sendTypingOff(recipientId) {
   console.log("Turning typing indicator off");
 
-  var messageData = {
+  const messageData = {
     recipient: {
       id: recipientId
     },
@@ -560,8 +560,8 @@ function callSendAPI(messageData) {
 
   }, function (error, response, body) {
     if (!error && response.statusCode == 200) {
-      var recipientId = body.recipient_id;
-      var messageId = body.message_id;
+      const recipientId = body.recipient_id;
+      const messageId = body.message_id;
 
       if (messageId) {
         console.log("Successfully sent message with id %s to recipient %s",
