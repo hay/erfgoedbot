@@ -572,6 +572,8 @@ function callSendAPI(messageData) {
       }
     } else {
       console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
+      console.error("Message data was:", JSON.stringify(messageData, null, 2));
+
     }
   });
 }
