@@ -195,33 +195,6 @@ function receivedAuthentication(event) {
 }
 
 
-function handleSearchResponse(senderID) {
-    return function (err, data) {
-        sendTypingOff(senderID);
-
-        if (err) {
-            sendTextMessage(senderID, err);
-        } else {
-            console.log(data);
-            if (data.type === 'buttons') {
-                sendButtonMessage(senderID, data.buttons);
-            }
-
-            if (data.type === 'images') {
-                sendTextMessage(senderID, `Je gaat zo zien: ${data.images.label}, ${data.images.description}`);
-                sendImageMessage(senderID, data.images.image);
-                setTimeout(function () {
-                    sendURL(senderID, `http://www.wikidata.org/wiki/${data.images.id}`);
-                }, 3000);
-            }
-
-            if (data.type === 'text') {
-                sendTextMessage(senderID, data.text);
-            }
-        }
-    };
-}
-
 /*
  * Message Event
  *
@@ -246,7 +219,32 @@ function receivedMessage(event) {
     senderID, recipientID, timeOfMessage);
   console.log(JSON.stringify(message));
 
-  // You may get a text or attachment but not both
+  function handleSearchResponse(err, data) {
+      sendTypingOff(senderID);
+
+      if (err) {
+          sendTextMessage(senderID, err);
+      } else {
+          console.log(data);
+          if (data.type === 'buttons') {
+              sendButtonMessage(senderID, data.buttons);
+          }
+
+          if (data.type === 'images') {
+              sendTextMessage(senderID, `Je gaat zo zien: ${data.images.label}, ${data.images.description}`);
+              sendImageMessage(senderID, data.images.image);
+              setTimeout(function () {
+                  sendURL(senderID, `http://www.wikidata.org/wiki/${data.images.id}`);
+              }, 3000);
+          }
+
+          if (data.type === 'text') {
+              sendTextMessage(senderID, data.text);
+          }
+      }
+  }
+
+    // You may get a text or attachment but not both
   const messageText = message.text;
 
     // Currently the only type we support is text
@@ -259,13 +257,13 @@ function receivedMessage(event) {
         if (parsedMsg.indexOf('-') !== -1) {
           const dates = parsedMsg.split('-');
 
-          bot.painterByDate(dates[1], dates[0], handleSearchResponse(senderID));
+          bot.painterByDate(dates[1], dates[0], handleSearchResponse);
         } else if (parsedMsg === 'utrecht') {
-          bot.getMonuments(handleSearchResponse(senderID));
+          bot.getMonuments(handleSearchResponse);
         } else if (parsedMsg === 'surprise') {
-          bot.randomArtist(handleSearchResponse(senderID));
+          bot.randomArtist(handleSearchResponse);
         } else {
-          bot.searchPainters(parsedMsg, handleSearchResponse(senderID));
+          bot.searchPainters(parsedMsg, handleSearchResponse);
         }
     } else {
         sendTextMessage(senderID, "Sorry, dit snap ik even niet.");
