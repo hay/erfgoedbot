@@ -20,7 +20,16 @@ const
   _ = require('lodash'),
   fs = require('fs');
 
-const config = JSON.parse(fs.readFileSync('config/production.json', 'utf-8'));
+const config = fs.existsSync('config/production.json')
+    ? JSON.parse(fs.readFileSync('config/production.json', 'utf-8'))
+    : {
+        "appSecret": process.env.MESSENGER_APP_SECRET,
+        "pageAccessToken": process.env.MESSENGER_PAGE_ACCESS_TOKEN,
+        "validationToken": process.env.MESSENGER_VALIDATION_TOKEN,
+        "serverURL": process.env.SERVER_URL,
+        "pathPrefix" : "",
+        "port" : process.env.PORT
+    };
 
 // App Secret can be retrieved from the App Dashboard
 const APP_SECRET = config.appSecret;
@@ -234,6 +243,7 @@ function receivedMessage(event) {
         sendTextMessage(senderID, "Ik ben nu aan het zoeken, een momentje...");
         sendTypingOn(senderID);
 
+        //noinspection JSAnnotator
         function handle(err, data) {
             sendTypingOff(senderID);
 
