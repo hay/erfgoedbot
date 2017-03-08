@@ -10,15 +10,7 @@
 /* jshint node: true, devel: true */
 'use strict';
 
-const
-    bodyParser = require('body-parser'),
-    crypto = require('crypto'),
-    express = require('express'),
-    https = require('https'),
-    request = require('request'),
-    bot = require('./bot.js'),
-    _ = require('lodash'),
-    fs = require('fs');
+const fs = require('fs');
 
 const config = fs.existsSync('config/production.json')
     ? JSON.parse(fs.readFileSync('config/production.json', 'utf-8'))
@@ -30,6 +22,18 @@ const config = fs.existsSync('config/production.json')
         "pathPrefix": "",
         "port": process.env.PORT
     };
+
+const fb = require("./fb/fb-lib")(config);
+
+const
+    bodyParser = require('body-parser'),
+    crypto = require('crypto'),
+    express = require('express'),
+    https = require('https'),
+    request = require('request'),
+    bot = require('./bot.js'),
+    _ = require('lodash');
+
 
 // App Secret can be retrieved from the App Dashboard
 const APP_SECRET = config.appSecret;
@@ -52,21 +56,9 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.json({verify: verifyRequestSignature}));
 app.use(PATH_PREFIX, express.static('public'));
 
-/*
- * Use your own validation token. Check that the token used in the Webhook
- * setup is the same token used here.
- *
- */
-app.get(`${PATH_PREFIX}/webhook`, function (req, res) {
-    if (req.query['hub.mode'] === 'subscribe' &&
-        req.query['hub.verify_token'] === VALIDATION_TOKEN) {
-        console.log("Validating webhook");
-        res.status(200).send(req.query['hub.challenge']);
-    } else {
-        console.error("Failed validation. Make sure the validation tokens match.");
-        res.sendStatus(403);
-    }
-});
+
+// Validate webhook
+app.get(`${PATH_PREFIX}/webhook`, fb.validateWebhook);
 
 /*
  * All callbacks for Messenger are POST-ed. They will be sent to the same
