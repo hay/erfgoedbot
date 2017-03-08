@@ -85,6 +85,32 @@ app.post(`${PATH_PREFIX}/webhook`, function (req, res) {
     }
 });
 
+const handleSearchResponse = (recipientID) => (err, data) => {
+    fb.sendTypingOff(recipientID);
+
+    if (err) {
+        fb.sendTextMessage(recipientID, err);
+    } else {
+        console.log(JSON.stringify(data, null, 2));
+        if (data.type === 'buttons') {
+            fb.sendButtonMessage(recipientID, data.buttons);
+        }
+
+        if (data.type === 'images') {
+            fb.sendTextMessage(recipientID, `Je gaat zo zien: ${data.images.label}, ${data.images.description}`);
+            fb.sendImageMessage(recipientID, data.images.image);
+            setTimeout(function () {
+                fb.sendURL(recipientID, `http://www.wikidata.org/wiki/${data.images.id}`);
+            }, 3000);
+            sendDelayedRandomizedSocialFeedback(recipientID);
+        }
+
+        if (data.type === 'text') {
+            fb.sendTextMessage(recipientID, data.text);
+        }
+    }
+};
+
 /*
  * Message Event
  *
@@ -125,31 +151,7 @@ function receivedMessage(event) {
         return;
     }
 
-    function handleSearchResponse(err, data) {
-        fb.sendTypingOff(senderID);
 
-        if (err) {
-            fb.sendTextMessage(senderID, err);
-        } else {
-            console.log(data);
-            if (data.type === 'buttons') {
-                fb.sendButtonMessage(senderID, data.buttons);
-            }
-
-            if (data.type === 'images') {
-                fb.sendTextMessage(senderID, `Je gaat zo zien: ${data.images.label}, ${data.images.description}`);
-                fb.sendImageMessage(senderID, data.images.image);
-                setTimeout(function () {
-                    fb.sendURL(senderID, `http://www.wikidata.org/wiki/${data.images.id}`);
-                }, 3000);
-                sendDelayedRandomizedSocialFeedback(senderID);
-            }
-
-            if (data.type === 'text') {
-                fb.sendTextMessage(senderID, data.text);
-            }
-        }
-    }
 
     // You may get a text or attachment but not both
     const messageText = message.text;
@@ -160,17 +162,16 @@ function receivedMessage(event) {
         fb.sendTextMessage(senderID, "Ik ben nu aan het zoeken, een momentje...");
         fb.sendTypingOn(senderID);
 
-
         if (parsedMsg.indexOf('-') !== -1) {
             const dates = parsedMsg.split('-');
 
-            bot.painterByDate(dates[1], dates[0], handleSearchResponse);
+            bot.painterByDate(dates[1], dates[0], handleSearchResponse(senderID));
         } else if (parsedMsg === 'utrecht') {
-            bot.getMonuments(handleSearchResponse);
+            bot.getMonuments(handleSearchResponse(senderID));
         } else if (parsedMsg === 'surprise') {
-            bot.randomArtist(handleSearchResponse);
+            bot.randomArtist(handleSearchResponse(senderID));
         } else {
-            bot.searchPainters(parsedMsg, handleSearchResponse);
+            bot.searchPainters(parsedMsg, handleSearchResponse(senderID));
         }
     } else {
         fb.sendTextMessage(senderID, "Sorry, dit snap ik even niet.");
