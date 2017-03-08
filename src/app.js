@@ -1,13 +1,3 @@
-/*
- * Copyright 2016-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-/* jshint node: true, devel: true */
 'use strict';
 
 const fs = require('fs');
@@ -45,45 +35,12 @@ app.use(PATH_PREFIX, express.static('public'));
 // Validate webhook
 app.get(`${PATH_PREFIX}/webhook`, fb.validateWebhook);
 
-/*
- * All callbacks for Messenger are POST-ed. They will be sent to the same
- * webhook. Be sure to subscribe your app to your page to receive callbacks
- * for your page.
- * https://developers.facebook.com/docs/messenger-platform/product-overview/setup#subscribe_app
- *
- */
-app.post(`${PATH_PREFIX}/webhook`, function (req, res) {
-    const data = req.body;
+function sendDelayedRandomizedSocialFeedback(recipientId) {
+    setTimeout(function () {
+        fb.sendTextMessage(recipientId, `${_.random(8, 50)} mensen zagen deze afbeelding ook, ${_.random(2, 4)} mensen kijken op dit moment`);
+    }, 4000);
+}
 
-    // Make sure this is a page subscription
-    if (data.object == 'page') {
-        // Iterate over each entry
-        // There may be multiple if batched
-        data.entry.forEach(function (pageEntry) {
-
-            // Iterate over each messaging event
-            pageEntry.messaging.forEach(function (messagingEvent) {
-                if (messagingEvent.message) {
-                    receivedMessage(messagingEvent);
-                } else if (messagingEvent.delivery) {
-                    fb.receivedDeliveryConfirmation(messagingEvent);
-                } else if (messagingEvent.postback) {
-                    receivedPostback(messagingEvent);
-                } else if (messagingEvent.read) {
-                    fb.receivedMessageRead(messagingEvent);
-                } else {
-                    console.log("Webhook received unimplemented messagingEvent: ", messagingEvent);
-                }
-            });
-        });
-
-        // Assume all went well.
-        //
-        // You must send back a 200, within 20 seconds, to let us know you've
-        // successfully received the callback. Otherwise, the request will time out.
-        res.sendStatus(200);
-    }
-});
 
 const handleSearchResponse = (recipientID) => (err, data) => {
     fb.sendTypingOff(recipientID);
@@ -111,94 +68,29 @@ const handleSearchResponse = (recipientID) => (err, data) => {
     }
 };
 
-/*
- * Message Event
- *
- * This event is called when a message is sent to your page. The 'message'
- * object format can vary depending on the kind of message that was received.
- * Read more at https://developers.facebook.com/docs/messenger-platform/webhook-reference/message-received
- *
- * For this example, we're going to echo any text that we get. If we get some
- * special keywords ('button', 'generic', 'receipt'), then we'll send back
- * examples of those bubbles to illustrate the special message bubbles we've
- * created. If we receive a message with an attachment (image, video, audio),
- * then we'll simply confirm that we've received the attachment.
- *
- */
-function receivedMessage(event) {
-    const senderID = event.sender.id;
-    const recipientID = event.recipient.id;
-    const timeOfMessage = event.timestamp;
-    const message = event.message;
+const handleTextMessage = (messageText, senderID) => {
+    const parsedMsg = messageText.trim().toLowerCase();
+    fb.sendTextMessage(senderID, "Ik ben nu aan het zoeken, een momentje...");
+    fb.sendTypingOn(senderID);
 
-    console.log("Received message for user %d and page %d at %d with message:", senderID, recipientID, timeOfMessage);
-    console.log(JSON.stringify(message));
+    if (parsedMsg.indexOf('-') !== -1) {
+        const dates = parsedMsg.split('-');
 
-    const isEcho = message.is_echo;
-    const messageId = message.mid;
-    const appId = message.app_id;
-    const metadata = message.metadata;
-    const quickReply = message.quick_reply;
-
-    if (isEcho) {
-        // Just logging message echoes to console
-        console.log("Received echo for message %s and app %d with metadata %s", messageId, appId, metadata);
-        return;
-    } else if (quickReply) {
-        const quickReplyPayload = quickReply.payload;
-        console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
-        fb.sendTextMessage(senderID, "Quick reply tapped");
-        return;
-    }
-
-
-
-    // You may get a text or attachment but not both
-    const messageText = message.text;
-
-    // Currently the only type we support is text
-    if (messageText) {
-        const parsedMsg = messageText.trim().toLowerCase();
-        fb.sendTextMessage(senderID, "Ik ben nu aan het zoeken, een momentje...");
-        fb.sendTypingOn(senderID);
-
-        if (parsedMsg.indexOf('-') !== -1) {
-            const dates = parsedMsg.split('-');
-
-            bot.painterByDate(dates[1], dates[0], handleSearchResponse(senderID));
-        } else if (parsedMsg === 'utrecht') {
-            bot.getMonuments(handleSearchResponse(senderID));
-        } else if (parsedMsg === 'surprise') {
-            bot.randomArtist(handleSearchResponse(senderID));
-        } else {
-            bot.searchPainters(parsedMsg, handleSearchResponse(senderID));
-        }
+        bot.painterByDate(dates[1], dates[0], handleSearchResponse(senderID));
+    } else if (parsedMsg === 'utrecht') {
+        bot.getMonuments(handleSearchResponse(senderID));
+    } else if (parsedMsg === 'surprise') {
+        bot.randomArtist(handleSearchResponse(senderID));
     } else {
-        fb.sendTextMessage(senderID, "Sorry, dit snap ik even niet.");
+        bot.searchPainters(parsedMsg, handleSearchResponse(senderID));
     }
+};
 
-    return;
-}
+const handleAttachments = (senderID) =>
+    fb.sendTextMessage(senderID, "Sorry, dit snap ik even niet.");
 
 
-
-
-/*
- * Postback Event
- *
- * This event is called when a postback is tapped on a Structured Message.
- * https://developers.facebook.com/docs/messenger-platform/webhook-reference/postback-received
- *
- */
-function receivedPostback(event) {
-    const senderID = event.sender.id;
-    const recipientID = event.recipient.id;
-    const timeOfPostback = event.timestamp;
-
-    // The 'payload' param is a developer-defined field which is set in a postback
-    // button for Structured Messages.
-    const payload = event.postback.payload;
-
+const handlePostback = (senderID, payload) => {
     bot.paintingsByArtist(payload, (err, data) => {
         if (err) {
             fb.sendTextMessage(senderID, `Er ging iets mis: ${err}`);
@@ -226,24 +118,55 @@ function receivedPostback(event) {
             }
         }
     });
-
-
-    console.log("Received postback for user %d and page %d with payload '%s' " +
-        "at %d", senderID, recipientID, payload, timeOfPostback);
-
     // When a postback is called, we'll send a message back to the sender to
     // let them know it was successful
     fb.sendTextMessage(senderID, "Ik ben nu een schilderij aan het ophalen...");
-}
+};
 
+/*
+ * All callbacks for Messenger are POST-ed. They will be sent to the same
+ * webhook. Be sure to subscribe your app to your page to receive callbacks
+ * for your page.
+ * https://developers.facebook.com/docs/messenger-platform/product-overview/setup#subscribe_app
+ *
+ */
+app.post(`${PATH_PREFIX}/webhook`, function (req, res) {
+    const data = req.body;
 
+    // Make sure this is a page subscription
+    if (data.object == 'page') {
+        // Iterate over each entry
+        // There may be multiple if batched
+        data.entry.forEach(function (pageEntry) {
 
-function sendDelayedRandomizedSocialFeedback(recipientId) {
-    setTimeout(function () {
-        fb.sendTextMessage(recipientId, `${_.random(8, 50)} mensen zagen deze afbeelding ook, ${_.random(2, 4)} mensen kijken op dit moment`);
-    }, 4000);
-}
+            // Iterate over each messaging event
+            pageEntry.messaging.forEach(function (messagingEvent) {
+                if (messagingEvent.message) {
+                    fb.receivedMessage(messagingEvent, {
+                        onTextMessage: handleTextMessage,
+                        onAttachments: handleAttachments
+                    });
+                } else if (messagingEvent.delivery) {
+                    fb.receivedDeliveryConfirmation(messagingEvent);
+                } else if (messagingEvent.postback) {
+                    fb.receivedPostback(messagingEvent, {
+                        onPostback: handlePostback
+                    });
+                } else if (messagingEvent.read) {
+                    fb.receivedMessageRead(messagingEvent);
+                } else {
+                    console.log("Webhook received unimplemented messagingEvent: ", messagingEvent);
+                }
+            });
+        });
 
+        // Assume all went well.
+        //
+        // You must send back a 200, within 20 seconds, to let us know you've
+        // successfully received the callback. Otherwise, the request will time out.
+        res.sendStatus(200);
+    }
+});
 
 // Start server
 // Webhooks must be available via SSL with a certificate signed by a valid
