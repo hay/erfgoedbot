@@ -70,7 +70,7 @@ app.post(`${PATH_PREFIX}/webhook`, function (req, res) {
                 } else if (messagingEvent.postback) {
                     receivedPostback(messagingEvent);
                 } else if (messagingEvent.read) {
-                    receivedMessageRead(messagingEvent);
+                    fb.receivedMessageRead(messagingEvent);
                 } else {
                     console.log("Webhook received unimplemented messagingEvent: ", messagingEvent);
                 }
@@ -121,7 +121,7 @@ function receivedMessage(event) {
     } else if (quickReply) {
         const quickReplyPayload = quickReply.payload;
         console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
-        sendTextMessage(senderID, "Quick reply tapped");
+        fb.sendTextMessage(senderID, "Quick reply tapped");
         return;
     }
 
@@ -129,23 +129,24 @@ function receivedMessage(event) {
         fb.sendTypingOff(senderID);
 
         if (err) {
-            sendTextMessage(senderID, err);
+            fb.sendTextMessage(senderID, err);
         } else {
             console.log(data);
             if (data.type === 'buttons') {
-                sendButtonMessage(senderID, data.buttons);
+                fb.sendButtonMessage(senderID, data.buttons);
             }
 
             if (data.type === 'images') {
-                sendTextMessage(senderID, `Je gaat zo zien: ${data.images.label}, ${data.images.description}`);
-                sendImageMessage(senderID, data.images.image);
+                fb.sendTextMessage(senderID, `Je gaat zo zien: ${data.images.label}, ${data.images.description}`);
+                fb.sendImageMessage(senderID, data.images.image);
                 setTimeout(function () {
-                    sendURL(senderID, `http://www.wikidata.org/wiki/${data.images.id}`);
+                    fb.sendURL(senderID, `http://www.wikidata.org/wiki/${data.images.id}`);
                 }, 3000);
+                sendDelayedRandomizedSocialFeedback(senderID);
             }
 
             if (data.type === 'text') {
-                sendTextMessage(senderID, data.text);
+                fb.sendTextMessage(senderID, data.text);
             }
         }
     }
@@ -156,7 +157,7 @@ function receivedMessage(event) {
     // Currently the only type we support is text
     if (messageText) {
         const parsedMsg = messageText.trim().toLowerCase();
-        sendTextMessage(senderID, "Ik ben nu aan het zoeken, een momentje...");
+        fb.sendTextMessage(senderID, "Ik ben nu aan het zoeken, een momentje...");
         fb.sendTypingOn(senderID);
 
 
@@ -172,7 +173,7 @@ function receivedMessage(event) {
             bot.searchPainters(parsedMsg, handleSearchResponse);
         }
     } else {
-        sendTextMessage(senderID, "Sorry, dit snap ik even niet.");
+        fb.sendTextMessage(senderID, "Sorry, dit snap ik even niet.");
     }
 
     return;
@@ -199,19 +200,20 @@ function receivedPostback(event) {
 
     bot.paintingsByArtist(payload, (err, data) => {
         if (err) {
-            sendTextMessage(senderID, `Er ging iets mis: ${err}`);
+            fb.sendTextMessage(senderID, `Er ging iets mis: ${err}`);
         } else {
             if (data.type === 'images') {
-                sendTextMessage(senderID, `Je gaat zo zien: ${data.images.label}, ${data.images.description}`);
-                sendImageMessage(senderID, data.images.image);
+                fb.sendTextMessage(senderID, `Je gaat zo zien: ${data.images.label}, ${data.images.description}`);
+                fb.sendImageMessage(senderID, data.images.image);
+                sendDelayedRandomizedSocialFeedback(senderID);
                 console.log(data.images);
 
                 if (data.images.collection) {
                     setTimeout(function () {
-                        sendTextMessage(senderID, `Dit kun je trouwens zien in de collectie van ${data.images.collection}`)
+                        fb.sendTextMessage(senderID, `Dit kun je trouwens zien in de collectie van ${data.images.collection}`)
                         const moreUrl = data.images.url ? data.images.url : `http://www.wikidata.org/wiki/${data.images.id}`;
-                        sendURL(senderID, moreUrl);
-                        sendButtonMessage(senderID, {
+                        fb.sendURL(senderID, moreUrl);
+                        fb.sendButtonMessage(senderID, {
                             text: "Nog een werk van deze schilder?",
                             data: [{
                                 title: "Ja, leuk!",
@@ -230,119 +232,15 @@ function receivedPostback(event) {
 
     // When a postback is called, we'll send a message back to the sender to
     // let them know it was successful
-    sendTextMessage(senderID, "Ik ben nu een schilderij aan het ophalen...");
+    fb.sendTextMessage(senderID, "Ik ben nu een schilderij aan het ophalen...");
 }
 
-/*
- * Message Read Event
- *
- * This event is called when a previously-sent message has been read.
- * https://developers.facebook.com/docs/messenger-platform/webhook-reference/message-read
- *
- */
-function receivedMessageRead(event) {
-    // All messages before watermark (a timestamp) or sequence have been seen.
-    const watermark = event.read.watermark;
-    const sequenceNumber = event.read.seq;
 
-    console.log("Received message read event for watermark %d and sequence " +
-        "number %d", watermark, sequenceNumber);
-}
 
-/*
- * Send an image using the Send API.
- *
- */
-function sendImageMessage(recipientId, url) {
-    url = `${url}?width=800`;
-
-    fb.callSendAPI({
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            attachment: {
-                type: 'image',
-                payload: {
-                    url: url
-                }
-            }
-        }
-    });
-
+function sendDelayedRandomizedSocialFeedback(recipientId) {
     setTimeout(function () {
-        sendTextMessage(recipientId, `${_.random(8, 50)} mensen zagen deze afbeelding ook, ${_.random(2, 4)} mensen kijken op dit moment`);
+        fb.sendTextMessage(recipientId, `${_.random(8, 50)} mensen zagen deze afbeelding ook, ${_.random(2, 4)} mensen kijken op dit moment`);
     }, 4000);
-}
-
-/*
- * Send a text message using the Send API.
- *
- */
-function sendTextMessage(recipientId, messageText) {
-    const messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: messageText,
-            metadata: "DEVELOPER_DEFINED_METADATA"
-        }
-    };
-
-    fb.callSendAPI(messageData);
-}
-
-/*
- * Send a button message using the Send API.
- *
- */
-function sendButtonMessage(recipientId, buttons) {
-    const data = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            attachment: {
-                type: "template",
-                payload: {
-                    "template_type": "button",
-                    "text": buttons.text,
-                    buttons: buttons.data.map((b) => {
-                        return {
-                            type: "postback",
-                            title: b.title,
-                            payload: b.payload
-                        }
-                    })
-                }
-            }
-        }
-    };
-
-    fb.callSendAPI(data);
-}
-
-function sendURL(recId, url) {
-    fb.callSendAPI({
-        recipient: {
-            id: recId
-        },
-        message: {
-            attachment: {
-                type: "template",
-                payload: {
-                    "template_type": "button",
-                    "text": 'Wil je meer weten?',
-                    buttons: [{
-                        type: "web_url",
-                        url: url,
-                        title: "Lees verder"
-                    }]
-                }
-            }
-        }
-    })
 }
 
 

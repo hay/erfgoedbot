@@ -159,15 +159,125 @@ module.exports = (config) => {
         console.log("All message before %d were delivered.", watermark);
     }
 
+    /*
+     * Message Read Event
+     *
+     * This event is called when a previously-sent message has been read.
+     * https://developers.facebook.com/docs/messenger-platform/webhook-reference/message-read
+     *
+     */
+    function receivedMessageRead(event) {
+        // All messages before watermark (a timestamp) or sequence have been seen.
+        const watermark = event.read.watermark;
+        const sequenceNumber = event.read.seq;
+
+        console.log("Received message read event for watermark %d and sequence " +
+            "number %d", watermark, sequenceNumber);
+    }
+
+    /*
+     * Send an image using the Send API.
+     *
+     */
+    function sendImageMessage(recipientId, url) {
+        url = `${url}?width=800`;
+
+        callSendAPI({
+            recipient: {
+                id: recipientId
+            },
+            message: {
+                attachment: {
+                    type: 'image',
+                    payload: {
+                        url: url
+                    }
+                }
+            }
+        });
+    }
+
+    /*
+     * Send a text message using the Send API.
+     *
+     */
+    function sendTextMessage(recipientId, messageText) {
+        const messageData = {
+            recipient: {
+                id: recipientId
+            },
+            message: {
+                text: messageText,
+                metadata: "DEVELOPER_DEFINED_METADATA"
+            }
+        };
+
+        callSendAPI(messageData);
+    }
+
+    /*
+     * Send a button message using the Send API.
+     *
+     */
+    function sendButtonMessage(recipientId, buttons) {
+        const data = {
+            recipient: {
+                id: recipientId
+            },
+            message: {
+                attachment: {
+                    type: "template",
+                    payload: {
+                        "template_type": "button",
+                        "text": buttons.text,
+                        buttons: buttons.data.map((b) => {
+                            return {
+                                type: "postback",
+                                title: b.title,
+                                payload: b.payload
+                            }
+                        })
+                    }
+                }
+            }
+        };
+
+        callSendAPI(data);
+    }
+
+    function sendURL(recId, url) {
+        callSendAPI({
+            recipient: {
+                id: recId
+            },
+            message: {
+                attachment: {
+                    type: "template",
+                    payload: {
+                        "template_type": "button",
+                        "text": 'Wil je meer weten?',
+                        buttons: [{
+                            type: "web_url",
+                            url: url,
+                            title: "Lees verder"
+                        }]
+                    }
+                }
+            }
+        })
+    }
 
 
     return {
         validateWebhook: validateWebhook,
         sendTypingOn: sendTypingOn,
         sendTypingOff: sendTypingOff,
-        callSendAPI: callSendAPI,
         verifyRequestSignature: verifyRequestSignature,
-
-        receivedDeliveryConfirmation: receivedDeliveryConfirmation
+        sendURL: sendURL,
+        sendButtonMessage: sendButtonMessage,
+        sendTextMessage: sendTextMessage,
+        sendImageMessage: sendImageMessage,
+        receivedDeliveryConfirmation: receivedDeliveryConfirmation,
+        receivedMessageRead: receivedMessageRead
     }
 };
