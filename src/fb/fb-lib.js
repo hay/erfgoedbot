@@ -1,4 +1,6 @@
-const crypto = require('crypto');
+const crypto = require('crypto'),
+    https = require('https'),
+    request = require('request');
 
 /*
  * Copyright 2016-present, Facebook, Inc.

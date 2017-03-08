@@ -28,8 +28,6 @@ const fb = require("./fb/fb-lib")(config);
 const
     bodyParser = require('body-parser'),
     express = require('express'),
-    https = require('https'),
-    request = require('request'),
     bot = require('./bot.js'),
     _ = require('lodash');
 
