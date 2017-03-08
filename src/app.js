@@ -27,16 +27,13 @@ const fb = require("./fb/fb-lib")(config);
 
 const
     bodyParser = require('body-parser'),
-    crypto = require('crypto'),
     express = require('express'),
     https = require('https'),
     request = require('request'),
     bot = require('./bot.js'),
     _ = require('lodash');
 
-// URL where the app is running (include protocol). Used to point to scripts and
-// assets located at this address.
-const SERVER_URL = config.serverURL;
+
 
 const PATH_PREFIX = config.pathPrefix;
 

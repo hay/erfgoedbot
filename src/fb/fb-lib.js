@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 /*
  * Copyright 2016-present, Facebook, Inc.
  * All rights reserved.
@@ -6,12 +8,14 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-
-
 module.exports = (config) => {
 
     // Arbitrary value used to validate a webhook
     const VALIDATION_TOKEN = config.validationToken;
+    // App Secret can be retrieved from the App Dashboard
+    const APP_SECRET = config.appSecret;
+    // Generate a page access token for your page from the App Dashboard
+    const PAGE_ACCESS_TOKEN = config.pageAccessToken;
 
     /*
      * Use your own validation token. Check that the token used in the Webhook
