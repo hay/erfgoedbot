@@ -1,7 +1,7 @@
 {
-  "name": "messenger-get-started",
+  "name": "erfgoedbot",
   "version": "1.0.0",
-  "description": "Get started example for Messenger Platform",
+  "description": "Facebook Messenger bot with Dutch erfgoed data, linked to Wikidata",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
@@ -10,10 +10,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/fbsamples/messenger-platform-samples.git"
+    "url": "https://github.com/hay/erfgoedbot.git"
   },
   "author": "Facebook",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "body-parser": "^1.15.0",
     "express": "^4.13.4",
@@ -22,6 +22,6 @@
     "request-promise": "^4.1.1"
   },
   "engines": {
-    "node": "6.9.x"
+    "node": "^6.9.4"
   }
 }
