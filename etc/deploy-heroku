@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+workdir=${PWD##*/}
+if [ "$workdir" == "etc" ]; then
+  cd ..
+fi
+
+git subtree push --prefix src heroku master
+
+if [ "$workdir" == "etc" ]; then
+  cd "etc"
+fi
