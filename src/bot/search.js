@@ -3,8 +3,12 @@ const _ = require('lodash');
 
 function randomArtist(callback) {
     wikidata.randomArtist((err, data) => {
-        data.data = [_.sample(data.data)];
-        handlePainters(err, data, callback);
+        if (err) {
+            handlePainters(err, null, callback);
+        } else {
+            data.data = [_.sample(data.data)];
+            handlePainters(err, data, callback);
+        }
     });
 }
 
