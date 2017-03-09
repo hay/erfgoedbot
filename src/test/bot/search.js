@@ -179,6 +179,70 @@ describe("search", () => {
         });
     });
 
+    describe("painterByDate", () => {
+        it("should invoke wikidata.painterByDate and handle success", (done) => {
+            const searchResult = {payload: "payload"};
+            const finalize = (e) => {
+                wikidata.painterByDate.restore();
+                done(e);
+            };
+
+            const assertCallback = (err, data) => {
+                try {
+                    expect(err).toEqual(null);
+                    expect(data).toEqual({
+                        buttons: searchResult,
+                        type: 'buttons'
+                    });
+                    finalize();
+                } catch(e) {
+                    finalize(e);
+                }
+            };
+
+            sinon.stub(wikidata, 'painterByDate', (d, m, responseCallback) => {
+                try {
+                    expect(d).toEqual(1);
+                    expect(m).toEqual(2);
+                    responseCallback(null, searchResult, assertCallback);
+                } catch (e) {
+                    finalize(e);
+                }
+            });
+
+            painterByDate(1, 2, assertCallback);
+        });
+
+        it("should invoke wikidata.painterByDate and handle null", (done) => {
+            const finalize = (e) => {
+                wikidata.painterByDate.restore();
+                done(e);
+            };
+
+            const assertCallback = (err, data) => {
+                try {
+                    expect(data).toEqual(null);
+                    expect(err).toEqual("Geen resultaten gevonden");
+                    finalize();
+                } catch(e) {
+                    finalize(e);
+                }
+            };
+
+            sinon.stub(wikidata, 'painterByDate', (d, m, responseCallback) => {
+                try {
+                    expect(d).toEqual(1);
+                    expect(m).toEqual(2);
+                    responseCallback({}, null, assertCallback);
+                } catch (e) {
+                    finalize(e);
+                }
+            });
+
+            painterByDate(1, 2, assertCallback);
+        });
+    });
+
     describe("randomArtist", () => {
         it("should invoke wikidata.randomArtist and handle success", (done) => {
             const searchResult = {data: [{payload: "payload"}, {payload: "payload"}]};
