@@ -164,7 +164,7 @@ describe("wikidata", () => {
 
 
     describe("handleImages", () => {
-        it("should respond with images when paintings were found", (done) => {
+        it("should respond with 1 image when paintings were found", (done) => {
             const rpStub = sinon.stub(rp, 'get');
             rpStub.resolves({results: {bindings: require("./res/paintings")}});
 
