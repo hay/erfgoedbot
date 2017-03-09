@@ -27,21 +27,6 @@ function getMonuments(callback) {
     });
 }
 
-function query(q, callback) {
-    q = q.toLowerCase();
-
-    wikidata.search(q, (err, data) => {
-        if (!data || data.length === 0) {
-            callback('Geen resultaten gevonden', null);
-        } else {
-            callback(null, {
-                type : 'buttons',
-                buttons : data
-            });
-        }
-    });
-}
-
 function handlePainters(err, data, callback) {
     if (err) {
         callback(err, null);
@@ -76,4 +61,4 @@ function paintingsByArtist(id, callback) {
     });
 }
 
-module.exports = { query, paintingsByArtist, searchPainters, painterByDate, getMonuments, randomArtist };
+module.exports = {  paintingsByArtist, searchPainters, painterByDate, getMonuments, randomArtist };
