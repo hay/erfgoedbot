@@ -1,3 +1,5 @@
+const rp = require('request-promise');
+
 function monuments(location) {
     return `
         SELECT ?item ?itemLabel ?itemDescription ?image WHERE {
@@ -55,6 +57,18 @@ function randomArtist() {
     } LIMIT 1000`;
 }
 
+function query(q) {
+    const ENDPOINT = `
+        https://query.wikidata.org/bigdata/namespace/wdq/sparql
+        ?format=json&query=${encodeURIComponent(q)}
+    `;
+
+    return rp.get({
+        uri : ENDPOINT,
+        json : true
+    });
+}
+
 module.exports = {
-    monuments, painterByDate, paintingsByArtist, searchPainters, randomArtist
+    monuments, painterByDate, paintingsByArtist, searchPainters, randomArtist, query
 };

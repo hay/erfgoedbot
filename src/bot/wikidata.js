@@ -1,23 +1,10 @@
-const rp = require('request-promise');
 const _ = require('lodash');
 const queries = require('./queries.js');
-
-function query(q) {
-    const ENDPOINT = `
-        https://query.wikidata.org/bigdata/namespace/wdq/sparql
-        ?format=json&query=${encodeURIComponent(q)}
-    `;
-
-    return rp({
-        uri : ENDPOINT,
-        json : true
-    });
-}
 
 function getMonuments(callback) {
     const q = queries.monuments("Q803");
 
-    query(q).then((data) => {
+    queries.query(q).then((data) => {
         handleImages(data, callback);
     });
 }
@@ -25,7 +12,7 @@ function getMonuments(callback) {
 function painterByDate(month, day, cb) {
     const q = queries.painterByDate(month, day);
 
-    query(q).then((data) => {
+    queries.query(q).then((data) => {
         data = data.results.bindings.map((item) => {
             return {
                 title : item.entityLabel.value,
@@ -48,26 +35,26 @@ function handleImages(data, cb, authorId) {
         return;
     }
 
-    var p = _.sample(data.results.bindings);
+    const p = _.sample(data.results.bindings);
 
-    var data = {
-        image : p.image.value,
-        label : p.itemLabel.value,
-        description : p.itemDescription.value,
-        id : p.item.value.replace('http://www.wikidata.org/entity/', ''),
-        author : authorId
+    const result = {
+        image: p.image.value,
+        label: p.itemLabel.value,
+        description: p.itemDescription.value,
+        id: p.item.value.replace('http://www.wikidata.org/entity/', ''),
+        author: authorId
     };
 
-    data.collection = p.collectionLabel ? p.collectionLabel.value : null;
-    data.url = p.described ? p.described.value : null;
+    result.collection = p.collectionLabel ? p.collectionLabel.value : null;
+    result.url = p.described ? p.described.value : null;
 
-    cb(null, data);
+    cb(null, result);
 }
 
 function paintingsByArtist(id, cb) {
     const q = queries.paintingsByArtist(id);
 
-    query(q).then((data) => {
+    queries.query(q).then((data) => {
         handleImages(data, cb, id);
     });
 }
@@ -97,7 +84,7 @@ function handlePainters(data, cb, limit) {
 function searchPainters(q, cb) {
     q = queries.searchPainters(q.toLowerCase());
 
-    query(q).then((data) => {
+    queries.query(q).then((data) => {
         handlePainters(data, cb);
     });
 }
@@ -105,7 +92,7 @@ function searchPainters(q, cb) {
 function randomArtist(cb) {
     q = queries.randomArtist();
 
-    query(q).then((data) => {
+    queries.query(q).then((data) => {
         handlePainters(data, cb, 100);
     });
 }
