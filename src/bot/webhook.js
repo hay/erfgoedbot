@@ -3,6 +3,7 @@ module.exports = (fb, handlers) => function (req, res) {
 
     // Make sure this is a page subscription
     if (data.object == 'page') {
+        console.log("=========");
         // Iterate over each entry
         // There may be multiple if batched
         data.entry.forEach(function (pageEntry) {

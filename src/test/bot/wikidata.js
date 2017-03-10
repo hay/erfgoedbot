@@ -180,7 +180,7 @@ describe("wikidata", () => {
                         collection: 'Van Gogh Museum',
                         description: 'painting by Vincent van Gogh, 1887',
                         id: 'Q19836161',
-                        image: 'http://commons.wikimedia.org/wiki/Special:FilePath/Moestuin%20met%20zonnebloem%20-%20s0004V1962v%20-%20Van%20Gogh%20Museum.jpg',
+                        image: 'http://commons.wikimedia.org/wiki/Special:FilePath/Moestuin%20met%20zonnebloem%20-%20s0004V1962v%20-%20Van%20Gogh%20Museum.jpg?width=800',
                         label: 'Allotment with Sunflower',
                         url: 'http://www.vggallery.com/painting/p_0388v.htm'
                     });

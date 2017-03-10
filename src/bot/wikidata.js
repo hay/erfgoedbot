@@ -38,7 +38,7 @@ function handleImages(data, cb, authorId) {
     const p = _.sample(data.results.bindings);
 
     const result = {
-        image: p.image.value,
+        image: `${p.image.value}?width=800`,
         label: p.itemLabel.value,
         description: p.itemDescription.value,
         id: p.item.value.replace('http://www.wikidata.org/entity/', ''),

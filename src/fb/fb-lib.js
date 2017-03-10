@@ -252,7 +252,7 @@ module.exports = (config) => {
      *
      */
     function sendImageMessage(recipientId, url) {
-        url = `${url}?width=800`;
+        url = `${url}`;
 
         callSendAPI({
             recipient: {

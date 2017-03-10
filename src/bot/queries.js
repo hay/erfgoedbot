@@ -57,8 +57,8 @@ function randomArtist() {
     } LIMIT 1000`;
 }
 
-function query(q) {
-    const ENDPOINT = `
+function query(q, url = null) {
+    const ENDPOINT = url || `
         https://query.wikidata.org/bigdata/namespace/wdq/sparql
         ?format=json&query=${encodeURIComponent(q)}
     `;
