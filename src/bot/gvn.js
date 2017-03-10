@@ -1,4 +1,3 @@
-    // http://geheugenvannederland.nl/nl/api/results?query=&page=1&maxperpage=0&coll=ngvn
 const rp = require("request-promise");
 const queries = require("./queries");
 const _ = require("lodash");
@@ -23,7 +22,7 @@ const randomSample = (data, q) => _.shuffle(
 const search = (q, {onSuccess, onError}) => {
 
     queries
-        .query(null, 'http://geheugenvannederland.nl/nl/api/results?maxperpage=0&coll=ngvn')
+        .query(null, `${process.env['GVN_URL']}/results?maxperpage=0&coll=ngvn`)
         .then((data) => {
             if (data && data.facets) {
                 const result = randomSample(data, q);
@@ -41,12 +40,10 @@ const search = (q, {onSuccess, onError}) => {
         }).catch(onError);
 };
 
-// http://geheugenvannederland.nl/nl/api/resource?coll=ngvn&identifier=RAA01%3A101&type=didl
-
 const imageByDidl = (result, callback) => {
 
     queries
-        .query(null, `http://geheugenvannederland.nl/nl/api/resource?coll=ngvn&identifier=` +
+        .query(null, `${process.env['GVN_URL']}/resource?coll=ngvn&identifier=` +
             `${encodeURIComponent(result.recordIdentifier)}&type=didl`)
         .then((data) => {
             if (data.resourceList && data.resourceList.images &&
@@ -66,7 +63,7 @@ const imageByFacet = (facet, callback) => {
     const page = _.random(1, facetCount);
 
     queries
-        .query(null, `http://geheugenvannederland.nl/nl/api/results?maxperpage=1&page=${page}&coll=ngvn` +
+        .query(null, `${process.env['GVN_URL']}/results?maxperpage=1&page=${page}&coll=ngvn` +
             `&facets[${encodeURIComponent(facetName)}][]=${encodeURIComponent(facetValue)}`)
         .then((data) => {
             if(data.diag || !data.records || data.records.length === 0) {
