@@ -41,9 +41,6 @@ module.exports = (fb) => {
         if (err) {
             fb.sendTextMessage(recipientId, `Er ging iets mis: ${err}`);
         } else {
-            console.log("---- building postback from ---");
-            console.log(JSON.stringify(data, null, 2));
-            console.log("---- / building postback from ---");
             if (data.type === 'images') {
                 fb.sendTextMessage(recipientId, `Je gaat zo zien: ${data.images.label}, ${data.images.description}`);
                 fb.sendImageMessage(recipientId, data.images.image);

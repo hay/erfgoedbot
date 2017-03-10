@@ -73,11 +73,7 @@ const imageByFacet = (facet, callback) => {
                 callback("Geen beeld gevonden");
             } else {
                 const [ result ]= data.records;
-                console.log(JSON.stringify(result, null, 2));
                 const title = typeof result.title === 'string' ? result.title : result.title[0];
-                console.log(title);
-
-
                 imageByDidl(result, (biggerImageUrl = null) => callback(null, {
                     type: "images",
                     images: {
@@ -93,9 +89,6 @@ const imageByFacet = (facet, callback) => {
             }
         })
         .catch(() => callback("Geen beeld gevonden"));
-/*
-    console.log(facetName, facetValue, facetCount);
-*/
 };
 
 module.exports = { search, imageByFacet };
