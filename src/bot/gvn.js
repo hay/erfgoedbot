@@ -46,11 +46,12 @@ const imageByDidl = (result, callback) => {
         .query(null, `${process.env['GVN_URL']}/resource?coll=ngvn&identifier=` +
             `${encodeURIComponent(result.recordIdentifier)}&type=didl`)
         .then((data) => {
+            console.log(JSON.stringify(data, null, 2));
             if (data.resourceList && data.resourceList.images &&
                 data.resourceList.images.length > 0 && data.resourceList.images[0].image.length > 0 &&
-                data.resourceList.images[0].image[0].src
+                data.resourceList.images[0].image[data.resourceList.images[0].image.length - 1].src
             ) {
-                callback(data.resourceList.images[0].image[0].src)
+                callback(data.resourceList.images[0].image[data.resourceList.images[0].image.length - 1].src)
             } else {
                 callback();
             }
